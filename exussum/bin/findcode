@@ -1,0 +1,11 @@
+#!/usr/bin/env python3
+
+from exussum.conf import Opt, err, setup
+from exussum.fs import grep
+import sys
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        err(Opt.findcode)
+    config = setup()
+    grep(config, sys.argv[1:])
