@@ -1,6 +1,7 @@
 import toml
 import os
 from collections import namedtuple as nt
+import shutil
 
 
 class Opt:
@@ -26,12 +27,26 @@ def setup(override_included_files=()):
     Unix = nt("Unix", "rg")
     home = os.path.expanduser("~")
 
-    with open(f"{home}/.exussum.ini") as fh:
-        raw = toml.load(fh)
-        if override_included_files:
-            raw["src"]["included_files"] = override_included_files
-        result = Config(Unix(**raw["unix"]), Src(**raw["src"]))
-        return result
+    try:
+        with open(f"{home}/.exussum.ini") as fh:
+            raw = toml.load(fh)
+            if override_included_files:
+                raw["src"]["included_files"] = override_included_files
+            return Config(Unix(**raw["unix"]), Src(**raw["src"]))
+    except FileNotFoundError:
+        print("~/.exussum.ini not found")
+        cfg = {
+            "unix": {"rg": shutil.which("rg")},
+            "src": {
+                "root": input("Entre root directory: "),
+                "included_files": input( "Entre included file globs separated by spaces: ").split(),
+                "excluded_files": input( "Entre excluded file globs separated by spaces: ").split(),
+                "excluded_paths": input( "Entre excluded paths separated by spaces: ").split(),
+            },
+        }
+        with open(f"{home}/.exussum.ini", "w") as fh:
+            toml.dump(cfg, fh)
+        return setup(override_included_files)
 
 
 def err(msg):

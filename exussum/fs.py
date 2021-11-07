@@ -6,18 +6,14 @@ import re
 
 
 def all_files(src):
-    regex_include = re.compile(
-        "|".join((fnmatch.translate(e) for e in src.included_files))
-    )
-    regex_exclude = re.compile(
-        "|".join((fnmatch.translate(e) for e in src.excluded_files))
-    )
+    regex_include = re.compile("|".join((fnmatch.translate(e) for e in src.included_files)))
+    regex_exclude = re.compile("|".join((fnmatch.translate(e) for e in src.excluded_files)))
 
     for root, dirs, files in os.walk(src.root):
         dirs[:] = [d for d in dirs if d not in src.excluded_paths]
         path = os.path.relpath(root, src.root)
         for file in files:
-            if regex_include.match(file) and not regex_exclude.match(file):
+            if regex_include.match(file) and not (src.excluded_files and regex_exclude.match(file)):
                 yield os.path.join(path, file)
 
 
